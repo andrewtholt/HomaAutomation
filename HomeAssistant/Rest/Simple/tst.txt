@@ -1,0 +1,12 @@
+set style data line
+set datafile separator "|"
+
+set xdata time
+set timefmt "%Y-%m-%d %H:%M:%S"
+set format x "%Y-%m-%d %H:%M:%S"
+set autoscale xfix
+
+plot "< sqlite3 temperature.db 'select timestamp,temperature from house'" using 1:2 title 'Temperature'
+
+pause -1 "Hit any key to continue"
+

@@ -1,0 +1,8 @@
+set style data line
+set datafile separator "|"
+
+plot "< sqlite3 temperature.db 'select max(temperature),avg(temperature),min(temperature) from house ;' " using 0:1 title 'max','' using 0:2 title 'avg', '' using 0:3 title 'min'
+
+pause -1 "Hit any key to continue"
+
+# 'select max_house_temperature,avg_house_temperature,min_house_temperature from sixty_minutes'

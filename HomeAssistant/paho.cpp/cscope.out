@@ -1,0 +1,247 @@
+cscope 15 /mnt/SOURCE/Source/Tools/HomeAssistant/paho.cpp               0000001321
+	@async_consume.cpp
+
+31 
+	~<io¡»am
+>
+
+32 
+	~<c¡dlib
+>
+
+33 
+	~<¡ršg
+>
+
+34 
+	~<c¡ršg
+>
+
+35 
+	~<cùy³
+>
+
+36 
+	~<th»ad
+>
+
+37 
+	~<chrÚo
+>
+
+38 
+	~"mq‰/async_þ›Á.h
+"
+
+40 
+usšg
+ 
+Çme¥aû
+ 
+	g¡d
+;
+
+42 cÚ¡ 
+¡ršg
+ 
+	gSERVER_ADDRESS
+ { "tcp://192.168.10.124:1883" };
+
+43 cÚ¡ 
+¡ršg
+ 
+	gCLIENT_ID
+ { "My Test" };
+
+44 cÚ¡ 
+¡ršg
+ 
+	gTOPIC
+ { "/test/start" };
+
+46 cÚ¡ 
+	gQOS
+ = 1;
+
+50 
+	$maš
+(
+¬gc
+, * 
+¬gv
+[])
+
+52 
+mq‰
+::
+cÚÃù_ÝtiÚs
+ 
+cÚnO±s
+;
+
+53 
+cÚnO±s
+.
+	`£t_k“p_®ive_š‹rv®
+(20);
+
+54 
+cÚnO±s
+.
+	`£t_þ—n_£ssiÚ
+(
+Œue
+);
+
+56 
+mq‰
+::
+async_þ›Á
+ 
+	`þi
+(
+SERVER_ADDRESS
+, 
+CLIENT_ID
+);
+
+58 
+Œy
+ {
+
+59 
+cout
+ << "CÚÃùšgØthMQTT s”v”..." << 
+æush
+;
+
+60 
+þi
+.
+	`cÚÃù
+(
+cÚnO±s
+)->
+	`wa™
+();
+
+61 
+þi
+.
+	`¡¬t_cÚsumšg
+();
+
+62 
+þi
+.
+	`subsüibe
+(
+TOPIC
+, 
+QOS
+)->
+	`wa™
+();
+
+63 
+cout
+ << "OK" << 
+’dl
+;
+
+67 
+Œue
+) {
+
+68 autØ
+msg
+ = 
+þi
+.
+	`cÚsume_mes§ge
+();
+
+69 ià(!
+msg
+) ;
+
+70 
+cout
+ << 
+msg
+->
+	`g‘_tÝic
+(è<< ": " << msg->
+	`to_¡ršg
+(è<< 
+’dl
+;
+
+75 
+cout
+ << "\nShu‰šg dowÀªd discÚÃùšg fromhMQTT s”v”..." << 
+æush
+;
+
+76 
+þi
+.
+	`unsubsüibe
+(
+TOPIC
+)->
+	`wa™
+();
+
+77 
+þi
+.
+	`¡Ý_cÚsumšg
+();
+
+78 
+þi
+.
+	`discÚÃù
+()->
+	`wa™
+();
+
+79 
+cout
+ << "OK" << 
+’dl
+;
+
+81 
+	`ÿtch
+ (cÚ¡ 
+mq‰
+::
+exû±iÚ
+& 
+exc
+) {
+
+82 
+û¼
+ << 
+exc
+.
+	`wh©
+(è<< 
+’dl
+;
+
+87 
+	}
+}
+
+	@
+1
+.
+1
+/usr/include
+1
+18
+async_consume.cpp

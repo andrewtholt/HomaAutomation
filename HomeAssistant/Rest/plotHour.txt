@@ -1,0 +1,7 @@
+set style data line
+set datafile separator "|"
+
+plot "< sqlite3 log.db 'select house_temperature from ten_minutes'" using 0:1 title 'Temperature'
+
+pause -1 "Hit any key to continue"
+

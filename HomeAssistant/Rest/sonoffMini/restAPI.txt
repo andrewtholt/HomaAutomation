@@ -1,0 +1,58 @@
+
+To set up:
+
+1. Create a Wifi access point :
+
+SSID: sonoffDiy
+Passwd: 20170618sn
+
+The sonoff will connect.  Connect a computer and using RESTer (a chrome plugin) set up the AP using with the first example below
+
+
+http://[ip]:[port]/zeroconf/wifi
+{ 
+	"deviceid": "10009abcde", 
+	"data": {
+    	"ssid": "HoltAtHome5", 
+    	"password": "xxxxxxxxxx"
+    } 
+}
+
+to get current setting send
+
+{
+  "deviceid": "10009abcde", 
+  "data": {} 
+}
+
+============================================
+
+Turn switch on
+
+http://[ip]:[port]/zeroconf/switch
+{
+  "deviceid": "10009abcde", 
+  "data": {
+      "switch": "on" 
+  } 
+}
+
+http://[ip]:[port]/zeroconf/info
+{
+  "deviceid": "10009abcde", 
+  "data": {} 
+}
+
+http://[ip]:[port]/zeroconf/signal_strength
+{
+  "deviceid": "10009abcde", 
+  "data": {} 
+}
+
+
+
+{
+  "deviceid": "10009abcde", 
+  "data": {} 
+}
+

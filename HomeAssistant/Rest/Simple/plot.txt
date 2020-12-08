@@ -1,0 +1,9 @@
+set style data line
+set datafile separator "|"
+
+show grid
+
+plot "< sqlite3 temperature.db 'select temperature from house'" using 0:1 title 'Temperature'
+
+pause -1 "Hit any key to continue"
+

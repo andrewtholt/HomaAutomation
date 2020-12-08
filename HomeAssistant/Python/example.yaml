@@ -1,0 +1,382 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 53.664361
+  longitude: -2.672009
+  # 
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 41
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/London
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+
+hive:
+    username: andrewtholt60@gmail.com
+    password: this-is-not-a-password
+
+cloud:
+
+# Configuration.yaml example
+script: 
+
+# Enables configuration UI
+config:
+
+system_health:
+
+http:
+  # Uncomment this to add a password (recommended!)
+  # api_password: PASSWORD
+  # Uncomment this if you are using SSL or running in Docker etc
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+updater:
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time.
+history:
+
+# View all events in a logbook
+logbook:
+
+# Track the sun
+sun:
+# 
+# Monitor APC ups
+#
+apcupsd:
+
+# Weather Prediction
+# sensor:
+#   platform: yr
+
+# Text to speech
+# tts:
+    #  platform: google
+# 
+# Notifications
+#
+notify:
+    - name: test
+      platform: pushbullet
+      api_key: and-this-is-not-a-key
+
+sensor:
+    - platform: apcupsd
+      resources:
+        - timeleft
+        - linev
+        - upsmode
+        - loadpct
+        - bcharge
+        - outputv
+        - status
+
+
+#    - platform: mqtt
+#      name: "Office Temperature"
+#      unit_of_measurement: "Celsius"
+#      state_topic: "/home/office/environment/temperature"
+
+
+binary_sensor:
+    - platform: mqtt
+      name: "Proliant State"
+      state_topic: "/home/office/proliant/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "acs1 State"
+      state_topic: "/home/office/acs1/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "acs4 State"
+      state_topic: "/home/office/acs4/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "UPS Status"
+      device_class: power
+      state_topic: "/home/office/ups/STATUS"
+      payload_on: "ONLINE"
+      payload_off: "BATT"
+
+    - platform: mqtt
+      name: "Main Feed"
+      device_class: power
+      state_topic: "/home/office/MainFeed/power"
+      payload_on: "ON"
+      payload_off: "OFF"
+
+    - platform: mqtt
+      name: "Beaglexm State"
+      state_topic: "/home/office/beaglexm/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "Probook State"
+      state_topic: "/home/office/probook/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+group:
+  lounge:
+    entities:
+        - switch.test
+
+  office: 
+    entities:
+        - binary_sensor.main_feed
+        - switch.fans
+        - switch.office_light
+#        - switch.relay_1
+#        - switch.relay_2
+#        - switch.relay_3
+#        - switch.relay_4
+
+  systems:
+    entities:
+      - switch.proliant
+      - binary_sensor.proliant_state
+      - binary_sensor.acs1_state
+      - binary_sensor.acs4_state
+      - binary_sensor.beaglexm_state
+      - binary_sensor.probook_state
+  ups:
+    entities:
+      - sensor.ups_time_left
+      - sensor.ups_mode
+      - sensor.ups_status
+      - sensor.ups_time_left
+      - sensor.ups_battery
+      - sensor.ups_input_voltage
+      - sensor.ups_output_voltage
+      - sensor.ups_load
+
+
+  outside:
+    entities:
+        #      - binary_sensor.porch_light
+        #      - binary_sensor.back_floodlights
+      - switch.porch_light
+      - switch.back_floodlights
+
+mqtt:
+  broker: 127.0.0.1
+
+switch:
+  - platform: mqtt
+    name: 'Test Start'
+    command_topic: "/test/start"
+    state_topic: "/test/start"
+    retain: true
+
+  - platform: mqtt
+    name: "Test Stop"
+    command_topic: "/test/stop"
+    state_topic: "/test/stop"
+    retain: true
+
+  - platform: snmp
+    name: 'Fans'
+    host: 192.168.10.51
+    community: private
+    baseoid: .1.3.6.1.4.1.318.1.1.4.4.2.1.3.8
+    payload_on: 1
+    payload_off: 2
+
+  #  - platform: command_line
+  #  switches:
+  #      fans:
+  #          command_on:  "/opt/homeControl/bin/setPower.py -n FANS -d ON"
+  #          command_off: "/opt/homeControl/bin/setPower.py -n FANS -d OFF"
+  #          value_template: '{{ value == "ON" }}'
+
+  - platform: mqtt
+    name: "Porch Light"
+    command_topic: "/home/outside/PorchLight_1/cmnd/power"
+    state_topic: "/home/outside/PorchLight_1/POWER"
+    availability_topic: "/home/outside/PorchLight_1/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+  - platform: mqtt
+    name: "Back Floodlights"
+    command_topic: "/home/outside/BackFloodlight/cmnd/power"
+    state_topic: "/home/outside/BackFloodlight/POWER"
+    availability_topic: "/home/outside/BackFloodlight/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+  - platform: mqtt
+    name: "Office Light"
+    command_topic: "/home/office/OfficeLight/cmnd/power"
+    state_topic: "/home/office/OfficeLight/POWER"
+    availability_topic: "/home/office/OfficeLight/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+#  - platform: mqtt
+#    name: "Relay 1"
+#    command_topic: "/home/office/relay1/power"
+#    state_topic: "/home/office/relay1/power"
+#    retain: true
+#
+#  - platform: mqtt
+#    name: "Relay 2"
+#    command_topic: "/home/office/relay2/power"
+#    state_topic: "/home/office/relay2/power"
+#    retain: true
+#
+#  - platform: mqtt
+#    name: "Relay 3"
+#    command_topic: "/home/office/relay3/power"
+#    state_topic: "/home/office/relay3/power"
+#    retain: true
+#
+#  - platform: mqtt
+#    name: "Relay 4"
+#    command_topic: "/home/office/relay4/power"
+#    state_topic: "/home/office/relay4/power"
+#    retain: true
+
+  - platform: mqtt
+    name: "proliant"
+    command_topic: "/home/office/proliant/power"
+    state_topic: "/home/office/proliant/power"
+    retain: true
+
+wemo:
+  discovery: true
+  static:
+    - 192.168.10.140
+
+automation:
+  -
+    alias: 'MQTT Test Stop'
+    trigger:
+        platform: state
+        entity_id: switch.test_stop
+    action:
+        service: mqtt.publish
+        data_template:
+            topic: '/home/homeAssistant/switch.test_stop'
+            retain: true
+            payload: >
+                {{trigger.to_state.state}}
+
+  -
+    alias: 'MQTT Test Start'
+    trigger:
+        platform: state
+        entity_id: switch.test_start
+    action:
+        service: mqtt.publish
+        data_template:
+            topic: '/home/homeAssistant/switch.test_start'
+            retain: true
+            payload: >
+                {{trigger.to_state.state}}
+
+  -
+    alias: 'Porch Light on, at dusk'
+    trigger:
+      platform: sun
+      event: sunset
+      offset: '-01:00:00'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.porch_light
+  -
+    alias: 'Porch Light on, at before dawn'
+    trigger:
+      platform: time
+      at: '05:00'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.porch_light
+  -
+    alias: 'Office Light on'
+    trigger:
+      platform: time
+      at: '05:30'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.office_light
+
+  -
+    alias: 'Office Light off'
+    trigger:
+      platform: sun
+      event: sunrise
+      offset: '01:00:00'
+    action:
+      service: homeassistant.turn_off
+      entity_id: switch.office_light
+
+  -
+    alias: 'Back Light on, at dusk'
+    trigger:
+      platform: sun
+      event: sunset
+      offset: '-01:00:00'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.back_floodlights
+  -
+    alias: 'Outside Lights Off Night'
+    trigger:
+        platform: time
+        at: '23:00:00'
+    action:
+        service: homeassistant.turn_off
+        entity_id: group.outside
+  -
+    alias: 'Outside Lights Off Day'
+    trigger:
+      platform: sun
+      event: sunrise
+      offset: '00:30:00'
+    action:
+        service: homeassistant.turn_off
+        entity_id: group.outside
+
+shell_command:
+   hass_test: '/srv/homeassistant/Scripts/logValue.sh {{ states.switch.porch_light.state }}'
+
