@@ -1,0 +1,14 @@
+{
+  "device": [
+      "conservatory": {
+      "mqtt_pub": "/test/conservatory/cmnd/power",
+      "mqtt_sub": "/test/conservatory/POWER"
+      }
+    ],
+    {
+      "name": "fire_lights",
+      "mqtt_pub": "/test/fire_lights/cmnd/power",
+      "mqtt_sub": "/test/fire_lights/POWER"
+    }
+  ]
+}
