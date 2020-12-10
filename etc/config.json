@@ -10,5 +10,10 @@
     }
   },
   "HomeAssistant": {},
-  "SonoffDIY": {}
+  "SonoffDIY": {
+    "test": {
+      "ip": "192.168.10.169",
+      "device_id": "1000c8c4b5"
+    }
+  }
 }
