@@ -7,10 +7,11 @@ import os.path
 from requests import get,post
 
 def usage():    
-    print( "Usage: switch.py -h|--help -v|--verbose  -n <name> | --name=<name> -c <cfg file>| --config=<cfg file>")
+    print( "Usage: switch.py -h|--help -j | --json -v|--verbose  -n <name> | --name=<name> -c <cfg file>| --config=<cfg file>")
     print("")        
     print("\t-h|-help\t\tThis.")    
     print("\t-v|--verbose\t\tVerbose.")    
+    print("\t-j|--json\t\tOutput in JSON.")    
     print("\t-n <name>|--name=<name>\tName of the device to control.")    
     print("\t-c <cfg>|--config=<cfg>\tLoad this config file.")
 
@@ -34,6 +35,7 @@ def main():
     test = False
     verbose = False
     state = ""
+    jssonOut = False
 
     try:
         opts, args = getopt.getopt( sys.argv[1:], "c:hvn:", ["config=", "help", "name="])
@@ -52,6 +54,8 @@ def main():
             sys.exit(0)
         elif o in ("-n", "--name"):
             name = a
+        elif o in ("-j","--jason"):
+            jsonOut = True
 
     HARest = readConfig( configFile )
 
@@ -66,8 +70,6 @@ def main():
     
     token=tmp.strip()
 
-#    entity_id = sys.argv[1] 
-#   GET /api/states/<entity_id> 
     url = 'http://192.168.10.124:8123/api/states/' + entity_id
     
     headers = {
