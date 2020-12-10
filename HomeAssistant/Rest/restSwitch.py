@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import json
 import sys
-import json
 import getopt
 import os.path
 
