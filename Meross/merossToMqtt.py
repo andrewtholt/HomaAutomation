@@ -39,20 +39,21 @@ def readConfig(fname):
         return(config)    
 
 
-
-
+connected = False
 async def simple_example():    
     print("simple_example")
     global client
+
     async with Client("192.168.10.124") as client:    
         async with client.filtered_messages("/home/house/#") as messages:    
             await client.subscribe("/home/house/#")
             async for message in messages:    
-                topic=message.topic
-                msg = message.payload.decode()
-                print("simple example")
-                print(topic)    
-                print(msg)
+                pass
+#                topic=message.topic
+#                msg = message.payload.decode()
+#                print("simple example")
+#                print(topic)    
+#                print(msg)
 
 async def mqttMain():    
     # Run the advanced_example indefinitely. Reconnect automatically    
