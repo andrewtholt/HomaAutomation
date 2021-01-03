@@ -62,12 +62,12 @@ async def simple_example():
         async with client.filtered_messages("/home/house/#") as messages:    
             await client.subscribe("/home/house/#")
             async for message in messages:    
-                pass
-#                topic=message.topic
-#                msg = message.payload.decode()
-#                print("simple example")
-#                print(topic)    
-#                print(msg)
+#                pass
+                topic=message.topic
+                msg = message.payload.decode()
+                print("simple example")
+                print(topic)    
+                print(msg)
 
 async def mqttMain():    
     # Run the advanced_example indefinitely. Reconnect automatically    
@@ -130,9 +130,11 @@ async def my_coro(namespace, data, device_internal_id):
 
 async def merossMain():
     global plugs
+    print("Meross Main")
     # Setup the HTTP client API from user-password
     http_api_client = await MerossHttpClient.async_from_user_password(email=EMAIL, password=PASSWORD)
 
+    print("HERE")
     # Setup and start the device manager
     manager = MerossManager(http_client=http_api_client)
     await manager.async_init()
