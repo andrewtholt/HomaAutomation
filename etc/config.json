@@ -1,4 +1,7 @@
 {
+  "general": {
+      "mqtt_server":"192.168.10.124"
+  },
   "meross": {
     "conservatory": {
       "mqtt_sub": "/home/house/conservatory/cmnd/power",
@@ -7,9 +10,15 @@
     "fire_lights": {
       "mqtt_sub": "/home/house/fire_lights/cmnd/power",
       "mqtt_pub": "/home/house/fire_lights/POWER"
+    },
+    "Penguins": {
+      "mqtt_sub": "/home/house/penguins/cmnd/power",
+      "mqtt_pub": "/home/house/penguins/POWER"
     }
   },
-  "HomeAssistant": {},
+  "HomeAssistant": {
+      "christmas lights":"switch.christmas_lights"
+  },
   "SonoffDIY": {
     "test": {
       "ip": "192.168.10.169",

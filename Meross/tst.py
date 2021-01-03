@@ -3,6 +3,7 @@
 import asyncio
 import os
 import sys
+from time import sleep
 
 from meross_iot.http_api import MerossHttpClient
 from meross_iot.manager import MerossManager
@@ -30,6 +31,8 @@ async def main():
     for dev in meross_devices:
         eprint(f"- {dev.name} ({dev.type}): {dev.online_status}")
         print(dev)
+        await dev.async_update()
+        print(dev.is_on())
 
     # Close the manager and logout from http_api
     manager.close()

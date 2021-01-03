@@ -3,6 +3,8 @@ import asyncio
 import os
 import os.path
 import json
+import getopt
+import sys
 
 from asyncio_mqtt import Client, MqttError
 
@@ -20,15 +22,32 @@ client =None
 async def simple_example():    
     print("simple_example")
     global client
-    async with Client("192.168.10.124") as client:    
-        async with client.filtered_messages("/home/house/#") as messages:    
+    print(config)
+
+    count = 1
+    print("--------------")
+    async with Client("192.168.10.124") as client:
+        # 
+        # TODO: get list from config and subscribe to each
+        #
+        async with client.filtered_messages("/home/house/#") as messages:
+
+
             await client.subscribe("/home/house/#")
             async for message in messages:    
                 topic=message.topic
                 msg = message.payload.decode()
-                print("simple example")
+
+                tmp = topic.split("/")
+
+                print(tmp[3])
+
+                count +=1
+                print(count)
+#                print("simple example")
                 print(topic)    
                 print(msg)
+#                await client.publish(topic, msg, qos=1)
 
 async def mqttMain():    
     # Run the advanced_example indefinitely. Reconnect automatically    
@@ -38,9 +57,6 @@ async def mqttMain():
 
     print("mqtt main here")
     reconnect_interval = 3  # [seconds]
-#    client = Client("192.168.10.124")
-#    client = Client("test.mosquitt.org")
-#    await stack.enter_async_context(client)
     print("Done")
 
     while True:    
@@ -57,9 +73,13 @@ async def my_coro(namespace, data, device_internal_id):
     global config
     print(config)
 
+
+    print("===== my_coro in ")
     print(data)
     print(namespace)
     print(device_internal_id)
+    print("===== my_coro done ")
+
 
     myName = myDevices[device_internal_id]
 
@@ -83,29 +103,48 @@ async def my_coro(namespace, data, device_internal_id):
 #    await asyncio.sleep(2)
     print("========================================")
 
-async def main():
+def usage():        
+    print("Usage: info.py -h|--help -v|--verbose -n <name> | --name=<name> -c <cfg file>| --config=<cfg file>")
+    print("")    
+    print("\t-h|-help\t\tThis.")    
+    print("\t-v|--verbose\t\tVerbose.")    
+    print("\t-c <cfg>|--config=<cfg>\tLoad this config file.")  
+
+def readConfig(fname):    
+    if not os.path.isfile(fname):        
+        print("Config file " + fname + " does not exist")        
+        sys.exit(1)    
+    
+    with open(fname) as cf:        
+        tmp = json.load(cf)
+
+        config = tmp['meross']
+        
+        return(config)    
+
+async def topTask():
+
+    print("topTask")
+    print(EMAIL)
     # Setup the HTTP client API from user-password
     http_api_client = await MerossHttpClient.async_from_user_password(email=EMAIL, password=PASSWORD)
+    print("One")
 
     # Setup and start the device manager
     manager = MerossManager(http_client=http_api_client)
     await manager.async_init()
 
+
     # Retrieve all the MSS210 devices that are registered on this account
     await manager.async_device_discovery()
-#    plugs = manager.find_devices(device_type="mss210")
+#    fred = await manager.find_devices(device_name="Penguins")
 
-    fred = manager.find_devices(device_name="conservatory")
-
-    print("fred", fred[0])
-
-    dev = fred[0]
-    print(dev.internal_id)
-
-    myDevices[dev.internal_id] = "conservatory"
-
+#    dev = fred[0]
+#    print(dev.internal_id)
+#
+#    myDevices[dev.internal_id] = "Penguins"
+#
     await dev.async_update()
-    print("fred is ", dev.is_on())
 
     dev.register_push_notification_handler_coroutine(my_coro)
 
@@ -115,6 +154,9 @@ async def main():
 
 
 #    all_devices = manager.find_devices()
+
+
+    print("=============================Here")
     plugs = manager.find_devices()
 
     for b in plugs:
@@ -133,18 +175,53 @@ async def main():
     manager.close()
     await http_api_client.async_logout()
 
-if __name__ == '__main__':
+def main():
 
-    config_file = open('config.json')
+    tryAgain = True    
+    count = 4    
+    
+    configFile = "/etc/HomeAutomation/config.json"        
+    name = ""         
+        
+    verbose = False    
+    
+    try:        
+        opts, args = getopt.getopt( sys.argv[1:], "c:hv", ["config=", "help"])    
+    except getopt.GetoptError as err:        
+        print(err)        
+        usage()           
+        sys.exit(2)        
+            
+    for o, a in opts:    
+        if o in ("-v", "--verbose"):    
+            verbose = True
+        elif o in ("-c", "--config"):
+            configFile = a
+        elif o in ("-h", "--help"):
+            usage()
+            sys.exit(0)
 
-    config = json.load(config_file)
 
-    print(config)
+    cfg = readConfig( configFile )
+
+    mqttServer = cfg['general']['mqtt_server']
+
+    global config
+    config = cfg['meross']
+
+
+    print("meross devices")
+    for k in config:
+        print(k)
+    print("==============")
+
+
+#    sys.exit(0)
 
     # On Windows + Python 3.8, you should uncomment the following
     # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    mainTask = asyncio.ensure_future(main())
+    mainTask = asyncio.ensure_future(topTask())
     mqttTask = asyncio.ensure_future(mqttMain())
 
     loop = asyncio.get_event_loop()
@@ -155,7 +232,4 @@ if __name__ == '__main__':
 
     loop.close()
 
-
-
-
-
+main()

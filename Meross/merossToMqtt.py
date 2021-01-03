@@ -5,6 +5,7 @@ import os.path
 import json
 import getopt
 import sys
+import signal
 
 from asyncio_mqtt import Client, MqttError
 
@@ -20,6 +21,10 @@ config = {}
 client =None
 verbose=False
 plugs = None
+runMeross = True
+
+def handler(signum, frame):    
+    print('Signal handler called with signal', signum)
 
 def usage():    
     print("Usage: merossToMqtt.py -h|--help -v|--verbose -c <cfg file>| --config=<cfg file>")
@@ -39,12 +44,21 @@ def readConfig(fname):
         return(config)    
 
 
-connected = False
+haveConnected = False
 async def simple_example():    
     print("simple_example")
     global client
+    global haveConnected
+
 
     async with Client("192.168.10.124") as client:    
+        if not haveConnected:
+            print("I have never connected before")
+            print(config)
+            for ent in config:
+                print(config[ent])
+            haveConnected = True
+
         async with client.filtered_messages("/home/house/#") as messages:    
             await client.subscribe("/home/house/#")
             async for message in messages:    
@@ -101,10 +115,10 @@ async def my_coro(namespace, data, device_internal_id):
     if 'togglex' in data:
         if (data['togglex'][0]['onoff']) == 1:
             print("I'm on")
-            message = 'on'
+            message = 'ON'
         else:
             print("I'm off")
-            message = 'off'
+            message = 'OFF'
 #
     print("Mqtt publish to>" + topic + "<")
     print("Mqtt message   >" + message + "<")
@@ -140,10 +154,11 @@ async def merossMain():
 
     # Close the manager and logout from http_api
 
-    while True:
-        await asyncio.sleep(50)
+    while runMeross:
+        await asyncio.sleep(5)
 
     manager.close()
+    manager.stop()
     await http_api_client.async_logout()
 
 # if __name__ == '__main__':
@@ -178,6 +193,10 @@ def main():
 
     # On Windows + Python 3.8, you should uncomment the following
     # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    signal.signal(signal.SIGHUP, handler)
+
+    print("i am",os.getpid())
 
     mainTask = asyncio.ensure_future(merossMain())
     mqttTask = asyncio.ensure_future(mqttMain())

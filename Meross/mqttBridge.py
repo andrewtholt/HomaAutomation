@@ -135,9 +135,10 @@ async def main():
 
 if __name__ == '__main__':
 
-    config_file = open('config.json')
+    config_file = open("../etc/config.json")
 
-    config = json.load(config_file)
+    tmp = json.load(config_file)
+    config=tmp['meross']
 
     print(config)
 
