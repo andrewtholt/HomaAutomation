@@ -67,7 +67,9 @@ create table if not exists mqtt (
     state_topic        varchar(128) not null unique,
     availability_topic char(128) not null unique,
 
-    device_type ENUM('TASMOTA','MQTT') not null default 'TASMOTA',
+    device_type  ENUM('TASMOTA','MQTT') not null default 'TASMOTA',
+    payload_type ENUM('TEXT','JSON','NUMERIC') not null default 'TEXT',
+
     data_type ENUM('BOOL', 'STRING','JSON') NOT NULL DEFAULT 'BOOL',
     payload_on  varchar(32) not null default 'ON',
     payload_off varchar(32) not null default 'OFF'
