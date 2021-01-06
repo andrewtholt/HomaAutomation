@@ -5,6 +5,37 @@ from contextlib import AsyncExitStack, asynccontextmanager
 from random import randrange
 from asyncio_mqtt import Client, MqttError
 
+import os
+import os.path
+import sys
+import getopt
+import json
+
+
+config = {}
+verbose = False
+
+EMAIL = os.environ.get('MEROSS_EMAIL') or "YOUR_MEROSS_CLOUD_EMAIL"
+PASSWORD = os.environ.get('MEROSS_PASSWORD') or "YOUR_MEROSS_CLOUD_PASSWORD"
+
+def usage():                                   
+    print("Usage: merossToMqtt.py -h|--help -v|--verbose -c <cfg file>| --config=<cfg file>")
+    print("")
+    print("\t-h|-help\t\tThis.")                                     
+    print("\t-v|--verbose\t\tVerbose.")                                          
+    print("\t-c <cfg>|--config=<cfg>\tLoad this config file.")
+
+def readConfig(fname):
+    if not os.path.isfile(fname):
+        print("Config file " + fname + " does not exist")
+        sys.exit(1)                                   
+                                                    
+    with open(fname) as cf:                    
+        config = json.load(cf)                                        
+        
+        return(config)    
+
+
 async def simple_example(queue):
     count = 0
     async with Client("192.168.10.124") as client:
@@ -38,6 +69,32 @@ async def consumer(q):
         print("Here :",data)
 
 def main():
+
+    try:    
+        opts, args = getopt.getopt( sys.argv[1:], "c:hvn:", ["config=", "help","name="])    
+    except getopt.GetoptError as err:    
+        print(err)    
+        usage()    
+        sys.exit(2)    
+    
+    for o, a in opts:    
+        if o in ("-v", "--verbose"):    
+            verbose = True    
+        elif o in ("-c", "--config"):    
+            configFile = a               
+        elif o in ("-h", "--help"):                              
+            usage()    
+            sys.exit(0)    
+        elif o in ("-n","--name"):    
+            name = a    
+    
+    config = readConfig( configFile)    
+    mqttServer = config['general']['mqtt_server']    
+
+    if verbose:     
+        print("Config File :" + configFile)    
+        print("MQTT Server :" + mqttServer) 
+
     queue = asyncio.Queue()
     loop = asyncio.get_event_loop()
 
