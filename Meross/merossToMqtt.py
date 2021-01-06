@@ -24,7 +24,12 @@ plugs = None
 runMeross = True
 
 def handler(signum, frame):    
+    global runMeross
     print('Signal handler called with signal', signum)
+
+    if signum == 1:
+        print("SIG HUP, shutting down")
+        runMeross = False
 
 def usage():    
     print("Usage: merossToMqtt.py -h|--help -v|--verbose -c <cfg file>| --config=<cfg file>")
@@ -149,16 +154,18 @@ async def merossMain():
 
         print(b)
         print(f"- {b.name} ({b.type}): {b.online_status} {b.is_on()}")
+        print("=====")
 
     print("\n")
     if len(plugs) < 1:
         print("No devices plugs found...")
 
-    # Close the manager and logout from http_api
 
     while runMeross:
         await asyncio.sleep(5)
 
+    # Close the manager and logout from http_api
+    print("Exited loop, Shutting Down")
     manager.close()
     manager.stop()
     await http_api_client.async_logout()
