@@ -41,6 +41,7 @@ def readConfig(fname):
 
 async def simple_example(queue):
     count = 0
+
     async with Client("192.168.10.124") as client:
         async with client.filtered_messages("/home/house/#") as messages:
             for n in config['meross']:
@@ -71,6 +72,22 @@ async def mqttMain(q):
 
 async def consumer(q):
     print("Consumer")
+
+    EMAIL = os.environ.get('MEROSS_EMAIL') or "YOUR_MEROSS_CLOUD_EMAIL"    
+    PASSWORD = os.environ.get('MEROSS_PASSWORD') or "YOUR_MEROSS_CLOUD_PASSWORD"
+
+    # Setup the HTTP client API from user-password    
+    # 
+    http_api_client = await MerossHttpClient.async_from_user_password(email=EMAIL, password=PASSWORD)
+    # 
+    # Setup and start the device manager    
+    # 
+    manager = MerossManager(http_client=http_api_client)    
+    await manager.async_init()
+
+    await manager.async_device_discovery()
+
+
     while True:
         data = await q.get()
         print("Here :",data)
@@ -84,6 +101,20 @@ async def consumer(q):
         print("\tTopic:" + topic)
         print("\tMsg  :" + msg)
         print("\tName :" + name)
+
+        devices = manager.find_devices(device_name=name)
+        dev=devices[0]
+
+        print("dev", dev)
+
+        if msg == 'ON':
+            await dev.async_turn_on(channel=0)
+        elif msg == 'OFF':
+            await dev.async_turn_off(channel=0)
+
+#        manager.close()
+
+
 
 
 def main():
