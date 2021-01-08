@@ -17,6 +17,7 @@ from meross_iot.manager import MerossManager
 
 config = {}
 verbose = False
+client = None
 
 EMAIL = os.environ.get('MEROSS_EMAIL') or "YOUR_MEROSS_CLOUD_EMAIL"
 PASSWORD = os.environ.get('MEROSS_PASSWORD') or "YOUR_MEROSS_CLOUD_PASSWORD"
@@ -40,6 +41,7 @@ def readConfig(fname):
 
 
 async def simple_example(queue):
+    global client
     count = 0
 
     async with Client("192.168.10.124") as client:
@@ -102,6 +104,10 @@ async def consumer(q):
         print("\tMsg  :" + msg)
         print("\tName :" + name)
 
+        updateTopic = config['meross'][name]['mqtt_pub']
+        print("\tTell :" + updateTopic)
+        print(client)
+
         devices = manager.find_devices(device_name=name)
         dev=devices[0]
 
@@ -112,6 +118,7 @@ async def consumer(q):
         elif msg == 'OFF':
             await dev.async_turn_off(channel=0)
 
+        await client.publish(updateTopic, msg, qos=1)
 #        manager.close()
 
 
