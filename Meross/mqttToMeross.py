@@ -121,6 +121,8 @@ async def consumer(q):
         # 
         # TODO: his works but should wait for notification from cloud server.
         # 
+        # See ../oldMeross/mqttTest.py line 169
+        # 
         await client.publish(updateTopic, msg, qos=1)
 #        manager.close()
 
