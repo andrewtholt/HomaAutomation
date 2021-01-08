@@ -118,6 +118,9 @@ async def consumer(q):
         elif msg == 'OFF':
             await dev.async_turn_off(channel=0)
 
+        # 
+        # TODO: his works but should wait for notification from cloud server.
+        # 
         await client.publish(updateTopic, msg, qos=1)
 #        manager.close()
 
