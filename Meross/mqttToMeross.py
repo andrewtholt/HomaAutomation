@@ -131,6 +131,7 @@ async def consumer(q):
 
 def main():
     global config
+    global verbose 
 
     try:    
         opts, args = getopt.getopt( sys.argv[1:], "c:hvn:", ["config=", "help","name="])    
