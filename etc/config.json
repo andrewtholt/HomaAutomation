@@ -11,7 +11,7 @@
       "mqtt_sub": "/home/house/fire_lights/cmnd/power",
       "mqtt_pub": "/home/house/fire_lights/POWER"
     },
-    "Penguins": {
+    "penguins": {
       "mqtt_sub": "/home/house/penguins/cmnd/power",
       "mqtt_pub": "/home/house/penguins/POWER"
     }
