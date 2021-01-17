@@ -25,7 +25,7 @@ class database:
         self.cursor = self.db.cursor()
 
 #    sql = "SELECT VERSION()"
-        sql = "select name, state_topic from mqttQuery where status <> 'DISABLED'"
+        sql = "select name, state_topic,pointType from mqttQuery where status <> 'DISABLED'"
         self.cursor.execute( sql )
 
         data = self.cursor.fetchall()
@@ -33,8 +33,10 @@ class database:
         for n in data:
             print(n[1])
 
+        print("====")
+
     def getByName(self, name):
-        sql = "select name, state_topic from mqttQuery where name ='" + name + "'"
+        sql = "select name, state_topic,pointType from mqttQuery where name ='" + name + "'"
         self.cursor.execute( sql )
 
         data = self.cursor.fetchone()
@@ -42,7 +44,7 @@ class database:
         return data
 
     def getByTopic(self, topic):
-        sql = "select name, state_topic from mqttQuery where state_topic ='" + topic + "'"
+        sql = "select name, state_topic,pointType from,pointType mqttQuery where state_topic ='" + topic + "'"
         self.cursor.execute( sql )
 
         data = self.cursor.fetchone()
@@ -52,7 +54,10 @@ class database:
     def getAllByDeviceType(self, dev_type):
         c = self.db.cursor()
 
-        sql = "select name, state_topic from mqttQuery where device_type ='" + dev_type + "'"
+        sql = "select name, state_topic, pointType from mqttQuery where device_type ='" + dev_type + "'"
+        sql += " and status = 'ENABLED'"
+
+        print(sql)
 
         c.execute( sql )
 
@@ -92,9 +97,15 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
 #    client.subscribe(start_topic)
+
+    print("Get TASMOTA")
+
     for node in db.getAllByDeviceType('TASMOTA'):
+        print(node[0])
         print(node[1])
+        print(node[2])
         client.subscribe( node[1] )
+        print("++++")
     
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):

@@ -39,10 +39,11 @@ create table if not exists io_point (
 
     status enum('ENABLED','DISABLED') not null default 'DISABLED',
     ioType varchar(8) not null,
+    pointType varchar(8) not null default 'switch',
     io_idx int,
     state BOOLEAN not null default 0,
     old_state BOOLEAN not null default 0,
-    logtime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE     CURRENT_TIMESTAMP
+    logtime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS internal (
@@ -77,7 +78,7 @@ create table if not exists mqtt (
 
 CREATE VIEW mqttQuery AS
     SELECT
-        io_point.name,io_point.status, 
+        io_point.name,io_point.status, pointType,
         mqtt.command_topic, mqtt.state_topic, mqtt.device_type,
         io_point.state,io_point.old_state,io_point.direction,mqtt.data_type,io_point.logtime
     FROM
