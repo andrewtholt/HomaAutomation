@@ -123,7 +123,7 @@ async def consumer(q):
         # 
         # See ../oldMeross/mqttTest.py line 169
         # 
-        await client.publish(updateTopic, msg, qos=1)
+        # await client.publish(updateTopic, msg, qos=1)
 #        manager.close()
 
 
