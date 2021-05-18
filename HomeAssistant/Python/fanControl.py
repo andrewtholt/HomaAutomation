@@ -1,4 +1,3 @@
-
 from haClass import haClass
 
 class fanControl(haClass):

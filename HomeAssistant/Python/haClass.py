@@ -13,6 +13,8 @@ connected = False
     
 class haClass(object):
     configFile="/etc/mqtt/bridge.json"
+    ioConfigFile = "/etc/HomeAutomation/config.json"
+
     mqttBroker = '127.0.0.1'
     mqttPort = 1883
     verbose = True
@@ -40,9 +42,11 @@ class haClass(object):
         state = s.upper()
 
         if state in ["ON","YES","TRUE"]:
+            print("true")
             return True
 
         if state in ["OFF","NO","FALSE"]:
+            print("false")
             return False
 
     def on_connect(self,client, userdata, flags, rc):
@@ -50,25 +54,66 @@ class haClass(object):
         self.connected = True
         
         print("Subscribing to :")
+        print(self.subList)
         for t in self.subList:
+            print(t)
+            topic = self.subList[t]['topic']
+            print(topic)
             # 
             # Use REST calls to get current value from Home Assistant.
             # 
-            topic = self.baseTopic + t
-            print("\t" + topic)
             self.mqttClient.subscribe(topic)
 
 
     def on_message(self, client, userData,msg):
-        print("Message")
+        print("\nMessage")
+
+        print(self.subList)
+
         result = (msg.payload).decode("utf-8")
+
         print(msg.topic, result);
         
         t = os.path.basename(msg.topic)
-        self.subList[ t ] = result
+        print("I am " + t)
+
+        if t in self.subList:
+            print("Found")
+        else:
+            print("Not Found")
+
+            for n in self.subList:
+                fred = self.subList[n]['topic']
+
+                if self.subList[n]['topic'] == msg.topic:
+                    print("Topic found",n)
+                    t = n
+                    break
+
+        self.subList[ t ]['state'] = self.__stateToLogic(result)
+
         print("======================++")
         
         self.logic()
+
+    def loadDefaultIO(self):
+        print("Loading ioConfig")
+        fail = True
+        if os.path.exists(self.ioConfigFile):
+            print(self.ioConfigFile + " found")
+            fail =False
+        else:
+            print(self.ioConfigFile + " not found")
+            fail = True
+        return fail
+
+
+    def loadIO(self, ioFile):
+        if os.path.exists(ioFile):
+            print("File Exists")
+        else:
+            print(self.ioConfigFile + " not found..")
+            sys.exit(1)
 
     def __init__(self):
         if os.path.exists(self.configFile):
@@ -108,13 +153,23 @@ class haClass(object):
             self.mqttClient.loop()
             time.sleep(0.1)
         
+    def changeTopic(self, name, topic):
+        self.subList[name]['topic'] = topic
+        if self.connected:
+            self.mqttClient.subscribe(topic)
+
     def addTopic(self, t, default):
-        self.subList[t] = default
+        print("addTopic")
+        self.subList[t] = {'topic':'', 'state':self.__stateToLogic(default) }
         
+        topic = self.baseTopic + t
+        print("\t"+topic)
+
+        self.subList[t]['topic'] = topic
+
+        print("\t" + topic)
         if self.connected:
             print("Subscribe.")
-            topic = self.baseTopic + t
-            print("\t" + topic)
             self.mqttClient.subscribe(topic)
             
     def refresh(self):
@@ -141,16 +196,21 @@ class haClass(object):
        print("     Token    :" + self.token)
        
        print("Sub list")
-       for topic in self.subList:
-           print("\t" + topic + "=" + self.subList[topic])
+       print("===")
+       print(self.subList)
+       print("===")
+       for name in self.subList:
+#           print("\t" + topic + "=" + self.subList[name]['topic'])
+           print("\t" + name + "=" , self.subList[name])
            
     # 
     # Lookup the value and return a boolean 
     # 
     def getBooleanValue(self, name):
         print(name)
-        print( self.subList[ name ])
-        return self.__stateToLogic( self.subList[ name ])
+        print( self.subList[ name ]['state'])
+#        return self.__stateToLogic( self.subList[ name ]['state'])
+        return self.subList[ name ]['state']
 
     def setBooleanValue(self, name, state):
 #        print(self.url)
@@ -160,10 +220,10 @@ class haClass(object):
         if state:
 #        if self.getBooleanValue(name):
             url += 'turn_on'
-            self.subList[name] = 'ON'
+            self.subList[name]['state'] = True
         else:
             url += 'turn_off'
-            self.subList[name] = 'OFF'
+            self.subList[name]['state'] = False
         
         headers = {
             'Authorization': 'Bearer '+ self.token ,
@@ -173,9 +233,9 @@ class haClass(object):
         # payload='{"entity_id": "switch.test"}'
         payload='{"entity_id":"' + name + '"}'
     
-#        print(headers)
-#        print(url)
-#        print(payload)
+        print(headers)
+        print(url)
+        print(payload)
         r = post(url, data=payload, headers=headers)
         
     

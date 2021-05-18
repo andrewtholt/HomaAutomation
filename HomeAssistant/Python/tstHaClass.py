@@ -10,12 +10,19 @@ def main():
     ha = fanControl()
 #    ha = haClass()
 
+    if ha.loadIO("../../etc/config.json") == True: 
+        print("Failed to load io config")
+    else:
+        print("io config loaded.")
+
+    sys.exit(1)
     ha.dump()
+
+    ha.Connect()
 
     ha.addTopic('switch.test_start','OFF')
     ha.addTopic('switch.test_stop','OFF')
     ha.addTopic('switch.fans','OFF')
-    ha.Connect()
     ha.dump()
     ha.refresh(1)
     
