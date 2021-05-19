@@ -10,6 +10,7 @@ def main():
     ha = fanControl()
 #    ha = haClass()
 
+    ha.loadDefaultIO()
     if ha.loadIO("../../etc/config.json") == True: 
         print("Failed to load io config")
     else:

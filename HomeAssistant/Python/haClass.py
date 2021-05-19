@@ -30,6 +30,8 @@ class haClass(object):
     
     subList = {}
 
+    ioCfg = None
+
     def __logicToState(self, s ) :
         
         if s:
@@ -97,10 +99,12 @@ class haClass(object):
         self.logic()
 
     def loadDefaultIO(self):
-        print("Loading ioConfig")
+        print("Loading default ioConfig from:"+ self.ioConfigFile )
         fail = True
         if os.path.exists(self.ioConfigFile):
-            print(self.ioConfigFile + " found")
+            with open( ioConfigFile, 'r') as f:
+                self.ioCfg = json.load(f)
+                print(self.ioCfg)
             fail =False
         else:
             print(self.ioConfigFile + " not found")
@@ -109,15 +113,19 @@ class haClass(object):
 
 
     def loadIO(self, ioFile):
+        print("Loading ioConfig from:"+ ioFile )
         if os.path.exists(ioFile):
             print("File Exists")
+            with open( ioFile, 'r') as f:
+                self.ioCfg = json.load(f)
+                print(self.ioCfg['MQTT'])
         else:
             print(self.ioConfigFile + " not found..")
             sys.exit(1)
 
     def __init__(self):
         if os.path.exists(self.configFile):
-            print("Loading file")
+            print("Loading Config file:" + self.configFile)
             with open( self.configFile, 'r') as f:
                 cfg = json.load(f)
 
