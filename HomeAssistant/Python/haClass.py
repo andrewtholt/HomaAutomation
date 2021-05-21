@@ -270,14 +270,10 @@ class haClass(object):
                print("\tItem    : " +item)
                print("\t" , self.ioCfg[section][item])
 
-#       for name in self.subList:
-#           print("\t" + topic + "=" + self.subList[name]['topic'])
-#           print("\t" + name + "=" , self.subList[name])
-           
     def getValue(self, section, name):
-        print("GET VALUE")
-        print(section,name)
-        print(self.ioCfg[section][ name ])
+#        print("GET VALUE")
+#        print(section,name)
+#        print(self.ioCfg[section][ name ])
 
         if 'state' in self.ioCfg[section][ name ]:
             print("Found")
@@ -293,7 +289,8 @@ class haClass(object):
         print(name)
 
         if 'state' in self.ioCfg[section][ name ]:
-            print("Found")
+            pass
+#            print("Found")
         else:
             print("Not Found")
             self.ioCfg[section][ name ]['state'] = False
@@ -308,6 +305,7 @@ class haClass(object):
         url=self.url  
         
         print(self.ioCfg[section])
+        self.ioCfg[section][ name ]['state'] = state
 
         
 
@@ -315,7 +313,7 @@ class haClass(object):
         
         url=self.url  
         
-        print(self.ioCfg[section])
+#        print(self.ioCfg[section])
         if state:
 #        if self.getBooleanValue(name):
             url += 'turn_on'
@@ -335,9 +333,9 @@ class haClass(object):
         else:
             payload='{"entity_id":"' + name + '"}'
     
-        print(headers)
-        print(url)
-        print(payload)
+#        print(headers)
+#        print(url)
+#        print(payload)
         r = post(url, data=payload, headers=headers)
         
     
