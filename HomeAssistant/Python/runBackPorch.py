@@ -9,17 +9,19 @@ def main():
     
     ha = backPorch()
 
-    cmdTopic = "/home/outside/PorchLight_1/cmnd/power"
+    ha.loadDefaultIO()    
 
-
-    ha.addTopic('switch.test_start','OFF')
-
-    ha.addTopic('switch.porch_light','OFF')
-    ha.changeTopic('switch.porch_light','/home/automation/porch_light')
+    if ha.loadIO("../../etc/config.json") == True:     
+        print("Failed to load io config")    
+    else:    
+        print("io config loaded.")    
+    
 
     ha.Connect()
+    ha.addTopic('general','TIME','INVALID')
+    ha.addTopic('general','SUNRISE','INVALID')
+    ha.addTopic('general','SUNSET','INVALID')
 
-    ha.dump()
     ha.refresh(1)
     
 #    ha.setBooleanValue('switch.test_start')

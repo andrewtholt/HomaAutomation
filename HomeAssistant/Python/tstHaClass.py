@@ -16,20 +16,25 @@ def main():
     else:
         print("io config loaded.")
 
-    sys.exit(1)
     ha.dump()
 
     ha.Connect()
 
-    ha.addTopic('switch.test_start','OFF')
-    ha.addTopic('switch.test_stop','OFF')
-    ha.addTopic('switch.fans','OFF')
+    ha.setBooleanValue('MQTT','start',False)
+    ha.setBooleanValue('MQTT','stop',False)
+    ha.setBooleanValue('HomeAssistant','fans',False)
+
+
+#    ha.addTopic('test_start','OFF')
+#    ha.addTopic('switch.test_stop','OFF')
+#    ha.addTopic('switch.fans','OFF')
     ha.dump()
+
     ha.refresh(1)
     
 #    ha.setBooleanValue('switch.test_start')
     
-    ha.logic()
+#    ha.logic()
     
     ha.run()
 

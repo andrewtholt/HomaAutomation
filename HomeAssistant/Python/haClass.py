@@ -28,9 +28,22 @@ class haClass(object):
     
     baseTopic = '/home/homeAssistant/'
     
-    subList = {}
-
     ioCfg = None
+
+    def readConfig(self,fname):        
+        cfg = None
+
+        if not os.path.isfile(fname):        
+            print("Config file " + fname + " does not exist")        
+            sys.exit(1)                                                      
+                               
+    # TODO catch exception, or test file existence
+        with open(fname) as cf:            
+            cfg = json.load(cf)            
+            
+#            cfg = config["HomeAssistant"]            
+        
+        return(cfg)
 
     def __logicToState(self, s ) :
         
@@ -51,26 +64,43 @@ class haClass(object):
             print("false")
             return False
 
+
+
+
     def on_connect(self,client, userdata, flags, rc):
         print("I'm Connected")
         self.connected = True
         
+#        self.findJson('fans','',all_paths)
+
         print("Subscribing to :")
-        print(self.subList)
-        for t in self.subList:
-            print(t)
-            topic = self.subList[t]['topic']
-            print(topic)
+        for t in self.ioCfg['MQTT']:
+            print("name",t)
+            topic = self.ioCfg['MQTT'][t]['mqtt_sub']
+            print("Topic " + self.ioCfg['MQTT'][t]['mqtt_sub'])
+            print("xxxxxxxxxx")
+            print("------")
             # 
             # Use REST calls to get current value from Home Assistant.
             # 
             self.mqttClient.subscribe(topic)
 
 
+    def findIO(self, name):
+
+        result = []
+
+        for f in self.ioCfg:
+            if name in self.ioCfg[f]:
+                print("->Found " + name + " in " + f)
+                result.append(f)
+                result.append(name)
+
+        return result
+
+
     def on_message(self, client, userData,msg):
         print("\nMessage")
-
-        print(self.subList)
 
         result = (msg.payload).decode("utf-8")
 
@@ -78,21 +108,43 @@ class haClass(object):
         
         t = os.path.basename(msg.topic)
         print("I am " + t)
+        print("\t" + result)
 
-        if t in self.subList:
+        place=self.findIO( t )
+
+        print("len", len(place))
+        base=place[0]
+        print("base", base)
+        item=place[1]
+        print("item", item)
+
+        if t in self.ioCfg[base]:
             print("Found")
         else:
             print("Not Found")
 
-            for n in self.subList:
-                fred = self.subList[n]['topic']
+            for n in self.ioCfg:
+                fred = self.ioCfg[n]['topic']
 
-                if self.subList[n]['topic'] == msg.topic:
+                if self.ioCfg[n]['topic'] == msg.topic:
                     print("Topic found",n)
                     t = n
                     break
+                else:
+                    print("Still not found")
 
-        self.subList[ t ]['state'] = self.__stateToLogic(result)
+        print("HERE /////////////////++")
+        print("A")
+        print("and")
+
+        print((self.ioCfg[base][ item ]['state']) is bool)
+
+        if type(self.ioCfg[base][ item ]['state']) is bool:
+            print("BOOL")
+            self.ioCfg[base][ item ]['state'] = self.__stateToLogic(result)
+        else:
+            print("STRING")
+            self.ioCfg[base][ item ]['state'] = result
 
         print("======================++")
         
@@ -102,9 +154,9 @@ class haClass(object):
         print("Loading default ioConfig from:"+ self.ioConfigFile )
         fail = True
         if os.path.exists(self.ioConfigFile):
-            with open( ioConfigFile, 'r') as f:
-                self.ioCfg = json.load(f)
-                print(self.ioCfg)
+            self.ioCfg = self.readConfig( self.ioConfigFile)
+
+            print(self.ioCfg)
             fail =False
         else:
             print(self.ioConfigFile + " not found")
@@ -116,9 +168,9 @@ class haClass(object):
         print("Loading ioConfig from:"+ ioFile )
         if os.path.exists(ioFile):
             print("File Exists")
-            with open( ioFile, 'r') as f:
-                self.ioCfg = json.load(f)
-                print(self.ioCfg['MQTT'])
+            self.ioCfg = self.readConfig( ioFile)
+
+            print(self.ioCfg['MQTT'])
         else:
             print(self.ioConfigFile + " not found..")
             sys.exit(1)
@@ -126,8 +178,10 @@ class haClass(object):
     def __init__(self):
         if os.path.exists(self.configFile):
             print("Loading Config file:" + self.configFile)
-            with open( self.configFile, 'r') as f:
-                cfg = json.load(f)
+
+            cfg = self.readConfig( self.configFile )
+#            with open( self.configFile, 'r') as f:
+#                cfg = json.load(f)
 
             self.mqttBroker = cfg['local']['name']
             self.mqttPort   = int(cfg['local']['port'])
@@ -166,18 +220,25 @@ class haClass(object):
         if self.connected:
             self.mqttClient.subscribe(topic)
 
-    def addTopic(self, t, default):
+    def addTopic(self,section, name, default):
         print("addTopic")
-        self.subList[t] = {'topic':'', 'state':self.__stateToLogic(default) }
-        
-        topic = self.baseTopic + t
-        print("\t"+topic)
 
-        self.subList[t]['topic'] = topic
+#        self.subList[t] = {'topic':'', 'state':self.__stateToLogic(default) }
+
+
+        print(section, name)
+        print(self.ioCfg[section][name])
+
+        if self.ioCfg[section][name]['state'] is bool:
+            self.ioCfg[section][name]['state'] = self.__stateToLogic(default)
+        else:
+            self.ioCfg[section][name]['state'] = default
+
+        topic = self.ioCfg[section][name]['mqtt_sub']
 
         print("\t" + topic)
         if self.connected:
-            print("Subscribe.")
+            print("Subscribe:" + topic )
             self.mqttClient.subscribe(topic)
             
     def refresh(self):
@@ -203,35 +264,65 @@ class haClass(object):
        
        print("     Token    :" + self.token)
        
-       print("Sub list")
-       print("===")
-       print(self.subList)
-       print("===")
-       for name in self.subList:
+       for section in self.ioCfg:
+           print("Section : " +section)
+           for item in self.ioCfg[section]:
+               print("\tItem    : " +item)
+               print("\t" , self.ioCfg[section][item])
+
+#       for name in self.subList:
 #           print("\t" + topic + "=" + self.subList[name]['topic'])
-           print("\t" + name + "=" , self.subList[name])
+#           print("\t" + name + "=" , self.subList[name])
            
+    def getValue(self, section, name):
+        print("GET VALUE")
+        print(section,name)
+        print(self.ioCfg[section][ name ])
+
+        if 'state' in self.ioCfg[section][ name ]:
+            print("Found")
+        else:
+            print("Not Found")
+            self.ioCfg[section][ name ]['state'] = ''
+
+        return self.ioCfg[section][ name ]['state']
     # 
     # Lookup the value and return a boolean 
     # 
-    def getBooleanValue(self, name):
+    def getBooleanValue(self, section, name):
         print(name)
-        print( self.subList[ name ]['state'])
-#        return self.__stateToLogic( self.subList[ name ]['state'])
-        return self.subList[ name ]['state']
 
-    def setBooleanValue(self, name, state):
-#        print(self.url)
+        if 'state' in self.ioCfg[section][ name ]:
+            print("Found")
+        else:
+            print("Not Found")
+            self.ioCfg[section][ name ]['state'] = False
+
+        print( self.ioCfg[section][ name ]['state'])
+        print("+++++")
+#        return self.__stateToLogic( self.subList[ name ]['state'])
+        return self.ioCfg[section][ name ]['state']
+
+
+    def setValue(self, section, name, state):
+        url=self.url  
+        
+        print(self.ioCfg[section])
+
+        
+
+    def setBooleanValue(self, section, name, state):
         
         url=self.url  
         
+        print(self.ioCfg[section])
         if state:
 #        if self.getBooleanValue(name):
             url += 'turn_on'
-            self.subList[name]['state'] = True
+            self.ioCfg[section][name]['state'] = True
         else:
             url += 'turn_off'
-            self.subList[name]['state'] = False
+            self.ioCfg[section][name]['state'] = False
         
         headers = {
             'Authorization': 'Bearer '+ self.token ,
@@ -239,7 +330,10 @@ class haClass(object):
         }
         
         # payload='{"entity_id": "switch.test"}'
-        payload='{"entity_id":"' + name + '"}'
+        if section == 'HomeAssistant':
+            payload='{"entity_id":"' + self.ioCfg[section][name]['name'] + '"}'
+        else:
+            payload='{"entity_id":"' + name + '"}'
     
         print(headers)
         print(url)

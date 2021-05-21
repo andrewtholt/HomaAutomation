@@ -7,9 +7,9 @@ class fanControl(haClass):
         
         self.dump()
         
-        start=self.getBooleanValue('switch.test_start')
-        stop =self.getBooleanValue('switch.test_stop')
-        fans =self.getBooleanValue('switch.fans')
+        start=self.getBooleanValue('MQTT','start')
+        stop =self.getBooleanValue('MQTT','stop')
+        fans =self.getBooleanValue('HomeAssistant','fans')
         
         fans = (start or fans) and (not stop)
         
@@ -17,4 +17,4 @@ class fanControl(haClass):
         print("Stop        ", stop)
         print("Fans out is ", fans)
         
-        self.setBooleanValue( 'switch.fans', fans )
+        self.setBooleanValue( 'HomeAssistant','fans', fans )
