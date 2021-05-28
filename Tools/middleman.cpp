@@ -41,6 +41,7 @@ size_t write_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 const list<string> onList = {"on","ON","true","TRUE", "yes","YES" };
+const list<string> offList = {"off","OFF","false","FALSE", "no","NO" };
 
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
@@ -302,8 +303,13 @@ string doGet(string entity_id) {
 
         state.erase(remove( state.begin(), state.end(), '\"' ),state.end());
 
-        cout << state << endl;
-
+        if ( count(onList.begin(), onList.end(), state) != 0) {
+                cout << "ON" << endl;
+        } else if ( count(offList.begin(), offList.end(), state) != 0) {
+                cout << "OFF" << endl;
+        } else { 
+            cout << state << endl;
+        }
     }
 }
 
