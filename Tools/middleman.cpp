@@ -12,11 +12,11 @@
 #include <sys/stat.h>
 
 #include <string>
-                    
+
 #include <iostream>
 #include <fstream>
 #include <list>
-#include <nlohmann/json.hpp>    
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 using namespace std;
@@ -43,42 +43,39 @@ size_t write_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
 const list<string> onList = {"on","ON","true","TRUE", "yes","YES" };
 
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-    cout << "HERE" << endl;
     size_t realsize = size * nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
-//    char *ptr = (char *)malloc(realsize + 1);
-
+    //  char *ptr = (char *)realloc(mem->memory, mem->size + realsize + 1);
     char *ptr = (char *)realloc(mem->memory, realsize + 1);
-
-    if(ptr == NULL) {                                                        
-        /* out of memory! */                                     
+    if(ptr == NULL) {
+        /* out of memory! */
         printf("not enough memory (realloc returned NULL)\n");
         return 0;
-    }                                                           
+    }
 
     mem->memory = ptr;
+    //  memcpy(&(mem->memory[mem->size]), contents, realsize);
     memcpy(mem->memory, contents, realsize);
-    mem->size = realsize;                                       
+    mem->size = realsize;
     mem->memory[mem->size] = 0;
 
     return realsize;
 }
-
 static size_t read_callback(void *dest, size_t size, size_t nmemb, void *userp) {
     struct WriteThis *wt = (struct WriteThis *)userp;
     size_t buffer_size = size*nmemb;
 
-    if(wt->sizeleft) {                  
+    if(wt->sizeleft) {
         /* copy as much as possible from the source to the destination */
         size_t copy_this_much = wt->sizeleft;
 
-        if(copy_this_much > buffer_size) {       
-            copy_this_much = buffer_size; 
-        }                                     
+        if(copy_this_much > buffer_size) {
+            copy_this_much = buffer_size;
+        }
         memcpy(dest, wt->readptr, copy_this_much);
 
-        wt->readptr += copy_this_much;                
+        wt->readptr += copy_this_much;
         wt->sizeleft -= copy_this_much;
         return copy_this_much; /* we copied this many bytes */
     }
@@ -136,17 +133,17 @@ bool doSet(string entity_id, string value) {
     FILE *tokenFile;
     string token;
 
-//    cerr << "set " + entity_id + " to " << value << endl;
+    //    cerr << "set " + entity_id + " to " << value << endl;
 
     ifstream myfile ("haToken.txt");
     if (myfile.is_open()) {
         getline (myfile,token);
 
         myfile.close();
-    } else { 
+    } else {
         cout << "Unable to open file" << endl << endl;
         exit(1);
-    }  
+    }
 
     string payload = "{\"entity_id\": \"" + entity_id + "\"}";
     wt.readptr = payload.c_str();
@@ -172,20 +169,20 @@ bool doSet(string entity_id, string value) {
         } else {
             url += "turn_off";
         }
-        /* First set the URL that is about to receive our POST. */    
-        curl_easy_setopt(curl, CURLOPT_URL,url.c_str());    
+        /* First set the URL that is about to receive our POST. */
+        curl_easy_setopt(curl, CURLOPT_URL,url.c_str());
 
-        /* Now specify we want to POST data */    
-        curl_easy_setopt(curl, CURLOPT_POST, 1L);    
+        /* Now specify we want to POST data */
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
-        /* we want to use our own read function */    
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);    
+        /* we want to use our own read function */
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
 
-        /* pointer to pass to our read function */    
-        curl_easy_setopt(curl, CURLOPT_READDATA, &wt);    
+        /* pointer to pass to our read function */
+        curl_easy_setopt(curl, CURLOPT_READDATA, &wt);
 
-        /* get verbose debug output please */    
-        //        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);    
+        /* get verbose debug output please */
+        //        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 
         string tmp= "Authorization: Bearer " + token ;
@@ -197,7 +194,7 @@ bool doSet(string entity_id, string value) {
         {
             struct curl_slist *chunk = NULL;
 
-//            chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
+            //            chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
             res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
             /* use curl_slist_free_all() after the *perform() call to free this
                list again */
@@ -209,6 +206,7 @@ bool doSet(string entity_id, string value) {
 #endif
 
 #ifdef DISABLE_EXPECT
+#warning DISABLE_EXPECT
         /*
            Using POST with HTTP 1.1 implies the use of a "Expect: 100-continue"
            header.  You can disable this header with CURLOPT_HTTPHEADER as usual.
@@ -231,7 +229,9 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 
         /* Perform the request, res will get the return code */
 
+
         res = curl_easy_perform(curl);
+
         /* Check for errors */
         if(res != CURLE_OK)
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
@@ -243,61 +243,66 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 }
 
 string doGet(string entity_id) {
-//    cout << "get " <<  entity_id;
+    //    cout << "get " <<  entity_id;
 
-    CURL *curl;    
-    CURLcode res;    
+    CURL *curl;
+    CURLcode res;
     struct curl_slist *list = NULL;
 
-    string token;
     struct MemoryStruct chunk;
+
+    string token;
+
 
     memset((void *)&chunk, 0, sizeof chunk);
 
     bool fail=true;
-      
-    ifstream myfile ("haToken.txt");    
-    if (myfile.is_open()) {    
-        getline (myfile,token);    
-      
-        myfile.close();    
-    } else {     
-        cout << "Unable to open file" << endl << endl;    
-        exit(1);    
-    } 
+
+    ifstream myfile ("haToken.txt");
+    if (myfile.is_open()) {
+        getline (myfile,token);
+
+        myfile.close();
+    } else {
+        cout << "Unable to open file" << endl << endl;
+        exit(1);
+    }
 
     curl = curl_easy_init();
-    if(curl) {    
-        string url = "http://192.168.10.124:8123/api/states/" + entity_id ;
+    if(curl) {
+        string url = "http://192.168.10.124:8123/api/states/" + entity_id;
 
-        string tmp = "Authorization: Bearer " + token ;    
-        list = curl_slist_append(list, "content-type: application/json/");    
-        list = curl_slist_append(list, tmp.c_str() );    
+        string tmp = "Authorization: Bearer " + token ;
+        //        cout << ">" << tmp << "<" << endl;
+        list = curl_slist_append(list, "content-type: application/json/");
+        list = curl_slist_append(list, tmp.c_str() );
 
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);    
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());    
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);    
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);    
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
-        /* Perform the request, res will get the return code */    
-        res = curl_easy_perform(curl);    
-        /* Check for errors */    
-        if(res != CURLE_OK)       
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",    
-                    curl_easy_strerror(res));    
+        /* Perform the request, res will get the return code */
+        res = curl_easy_perform(curl);
+        /* Check for errors */
+        if(res != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                    curl_easy_strerror(res));
+
         /* always cleanup */
         curl_easy_cleanup(curl);
 
-//        printf("%s\n", chunk.memory);
+        //        printf("%s\n", chunk.memory);
 
         json inJson;
+
         inJson = json::parse( chunk.memory );
 
         string state = inJson["state"];
 
         state.erase(remove( state.begin(), state.end(), '\"' ),state.end());
 
-//        cout << state << endl;
+        cout << state << endl;
 
     }
 }
@@ -349,13 +354,13 @@ int main() {
         OK = getFromIn(line,sizeof line);
         if(OK) {
             trimWhiteSpace(line);
-//            fprintf(stderr,"=>%s\n", line);
+            //            fprintf(stderr,"=>%s\n", line);
 
             if(line[0] == '^' ) {
                 if(!strcmp(line,"^EXIT")) {
                     printf("EXIT\n");
                     run = false;
-                } else if (!strcmp(line,"^PING")) { 
+                } else if (!strcmp(line,"^PING")) {
                     printf("PONG\n");
                 } else {
                     int tokCount = 1;
@@ -365,15 +370,15 @@ int main() {
                     strcpy(buffer,line);
 
                     tok[0] = strtok(buffer," ");
-//                    printf("tok[0] is %s\n", tok[0]);
+                    //                    printf("tok[0] is %s\n", tok[0]);
 
                     tok[1] = strtok(NULL," ");
                     if(tok[1] != NULL) {
                         tokCount++;
-//                        printf("tok[1] is %s\n", tok[1]);
+                        //                        printf("tok[1] is %s\n", tok[1]);
                         tok[2] = strtok(NULL," ");
                         if(tok[2] != NULL) {
-//                            printf("tok[2] is %s\n", tok[2]);
+                            //                            printf("tok[2] is %s\n", tok[2]);
                             tokCount++;
                         }
                     }
@@ -381,7 +386,7 @@ int main() {
                     if(fail) {
                         printf("^ERROR\n");
                     }
-                    printf("Tok count %d\n",tokCount);
+//                    printf("Tok count %d\n",tokCount);
                 }
 
             } else {
