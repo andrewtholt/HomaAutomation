@@ -241,6 +241,7 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
         curl_easy_cleanup(curl);
     }
     curl_global_cleanup();
+    cout << "OK" << endl;
 }
 
 string doGet(string entity_id) {
@@ -303,13 +304,15 @@ string doGet(string entity_id) {
 
         state.erase(remove( state.begin(), state.end(), '\"' ),state.end());
 
+        string out = entity_id +":";
         if ( count(onList.begin(), onList.end(), state) != 0) {
-                cout << "ON" << endl;
+                out += "ON";
         } else if ( count(offList.begin(), offList.end(), state) != 0) {
-                cout << "OFF" << endl;
+                out += "OFF";
         } else { 
-            cout << state << endl;
+            out += state;
         }
+        cout << out << endl;
     }
 }
 
