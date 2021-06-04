@@ -241,12 +241,11 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
         curl_easy_cleanup(curl);
     }
     curl_global_cleanup();
-    cout << "OK" << endl;
+    cout << "-OK" << endl;
+    return true;
 }
 
-string doGet(string entity_id) {
-    //    cout << "get " <<  entity_id;
-
+void doGet(string entity_id) {
     CURL *curl;
     CURLcode res;
     struct curl_slist *list = NULL;
@@ -254,7 +253,6 @@ string doGet(string entity_id) {
     struct MemoryStruct chunk;
 
     string token;
-
 
     memset((void *)&chunk, 0, sizeof chunk);
 
@@ -300,19 +298,24 @@ string doGet(string entity_id) {
 
         inJson = json::parse( chunk.memory );
 
-        string state = inJson["state"];
+        if ( inJson["message"] == "Entity not found.") {
+            cout << "-ERROR" << endl;
+        }  else {
 
-        state.erase(remove( state.begin(), state.end(), '\"' ),state.end());
+            string state = inJson["state"];
 
-        string out = entity_id +":";
-        if ( count(onList.begin(), onList.end(), state) != 0) {
+            state.erase(remove( state.begin(), state.end(), '\"' ),state.end());
+
+            string out = "+GET " + entity_id + " ";
+            if ( count(onList.begin(), onList.end(), state) != 0) {
                 out += "ON";
-        } else if ( count(offList.begin(), offList.end(), state) != 0) {
+            } else if ( count(offList.begin(), offList.end(), state) != 0) {
                 out += "OFF";
-        } else { 
-            out += state;
+            } else { 
+                out += state;
+            }
+            cout << out << endl;
         }
-        cout << out << endl;
     }
 }
 
@@ -369,6 +372,8 @@ int main() {
                 if(!strcmp(line,"^EXIT")) {
                     printf("EXIT\n");
                     run = false;
+                } else if (!strcmp(line,"^HELP")) {
+                    printf("HELP\n");
                 } else if (!strcmp(line,"^PING")) {
                     printf("PONG\n");
                 } else {
@@ -393,9 +398,9 @@ int main() {
                     }
                     bool fail = parseCmd(tokCount, tok);
                     if(fail) {
-                        printf("^ERROR\n");
+                        printf("-ERROR\n");
                     }
-//                    printf("Tok count %d\n",tokCount);
+                    //                    printf("Tok count %d\n",tokCount);
                 }
 
             } else {
