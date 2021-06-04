@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <algorithm>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -35,6 +36,20 @@ struct MemoryStruct {
     char *memory;
     size_t size;
 };
+
+std::string ltrim(const std::string &s, const string WHITESPACE) {
+    size_t start = s.find_first_not_of(WHITESPACE);
+    return (start == std::string::npos) ? "" : s.substr(start);
+}
+ 
+std::string rtrim(const std::string &s, const string WHITESPACE) {
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+ 
+std::string trim(const std::string &s, const string WHITESPACE) {
+    return rtrim(ltrim(s, WHITESPACE),WHITESPACE);
+}
 
 size_t write_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
     return size * nmemb;
@@ -250,6 +265,38 @@ void doGet(string entity_id) {
     CURLcode res;
     struct curl_slist *list = NULL;
 
+    bool logical=false;
+    string prefix = "switch";
+    string subData = "[";
+
+    char *more;
+    string path;
+
+    char element[64];
+    char *elementName;
+
+    more = strchr( (char *)entity_id.c_str(), '[');
+
+    if(entity_id.substr(0,prefix.size()) == prefix) {
+        logical = true;
+        path = "";
+    } else if (more != NULL ) {
+        path = trim(more, "[]");
+        cout << path << endl;
+
+        strcpy( element, entity_id.c_str());
+
+        char *tmp = strtok(element,"[]");
+        char *tmp1 = strtok(NULL,"[]");
+
+        cout << tmp << endl;
+        cout << tmp1 << endl;
+
+        entity_id = tmp;
+        elementName = tmp1;
+
+    }
+
     struct MemoryStruct chunk;
 
     string token;
@@ -292,8 +339,6 @@ void doGet(string entity_id) {
         /* always cleanup */
         curl_easy_cleanup(curl);
 
-        //        printf("%s\n", chunk.memory);
-
         json inJson;
 
         inJson = json::parse( chunk.memory );
@@ -307,14 +352,22 @@ void doGet(string entity_id) {
             state.erase(remove( state.begin(), state.end(), '\"' ),state.end());
 
             string out = "+GET " + entity_id + " ";
-            if ( count(onList.begin(), onList.end(), state) != 0) {
-                out += "ON";
-            } else if ( count(offList.begin(), offList.end(), state) != 0) {
-                out += "OFF";
-            } else { 
-                out += state;
+
+            if (logical) {
+                if ( count(onList.begin(), onList.end(), state) != 0) {
+                    out += "ON";
+                } else if ( count(offList.begin(), offList.end(), state) != 0) {
+                    out += "OFF";
+                } else { 
+                    out += state;
+                }
+                cout << out << endl;
+            } else {
+                string tmp = trim(state,string(" \n\r\t\f\v"));
+                cout << out + tmp ;
+//                cout << chunk.memory << endl;
+                cout << path << endl;
             }
-            cout << out << endl;
         }
     }
 }
