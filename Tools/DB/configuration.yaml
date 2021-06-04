@@ -1,0 +1,515 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 53.664361
+  longitude: -2.672009
+  # 
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 41
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/London
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+
+hive:
+    username: andrewtholt60@gmail.com
+    password: sysfw019
+
+cloud:
+#   alexa:
+#     filter:
+#       include_entities:
+#         switch.mood_light:
+#     entity_config:
+#       switch.mood_light:
+#         name: "Mood Light"
+#         description: "Low level light in living room"
+
+# Configuration.yaml example
+
+# Enable Python
+python_script:
+
+# Enable Logger
+logger:
+
+# Enables configuration UI
+config:
+
+system_health:
+
+http:
+  # Uncomment this to add a password (recommended!)
+  # api_password: PASSWORD
+  # Uncomment this if you are using SSL or running in Docker etc
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+updater:
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time.
+history:
+
+# View all events in a logbook
+logbook:
+
+# Track the sun
+sun:
+# 
+# Monitor APC ups
+#
+apcupsd:
+
+# Weather Prediction
+# sensor:
+#   platform: yr
+
+# Text to speech
+# tts:
+    #  platform: google
+# 
+# Notifications
+#
+notify:
+    - name: test
+      platform: pushbullet
+      api_key: o.kUt6RpezKbPGtSjHeMwowGgUMTfwweyn
+
+sensor:
+    - platform: snmp
+      name: 'Main Feed'
+      host: 192.168.10.51
+      community: public
+      baseoid: .1.3.6.1.4.1.318.1.1.4.4.2.1.3.1
+#      payload_on: 1
+#      payload_off: 2
+
+    - platform: mqtt
+      name: "Light level"
+      state_topic: "/home/office/light"
+      unit_of_measurement: "Lux"
+
+    - platform: mqtt
+      name: "Temperature"
+      state_topic: "/home/office/WEMOS/temperature"
+      unit_of_measurement: "C"
+
+    - platform: mqtt
+      name: "Pressure"
+      state_topic: "/home/office/WEMOS/pressure"
+      unit_of_measurement: "mBar"
+
+    - platform: mqtt
+      name: "Humidity"
+      state_topic: "/home/office/WEMOS/humidity"
+      unit_of_measurement: "%"
+
+    - platform: mqtt
+      name: "dewpoint"
+      state_topic: "/home/office/WEMOS/dewpoint"
+      unit_of_measurement: "C"
+
+    - platform: apcupsd
+      resources:
+        - upsname
+        - timeleft
+        - linev
+        - upsmode
+        - loadpct
+        - bcharge
+        - outputv
+        - status
+
+
+#    - platform: mqtt
+#      name: "Office Temperature"
+#      unit_of_measurement: "Celsius"
+#      state_topic: "/home/office/environment/temperature"
+
+
+binary_sensor:
+
+    - platform: mqtt
+      name: "Punch State"
+      state_topic: "/home/office/punch/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "acs1 State"
+      state_topic: "/home/office/acs1/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+#    - platform: mqtt
+#      name: "acs4 State"
+#      state_topic: "/home/office/acs4/state"
+#      device_class: connectivity
+#      payload_on: "UP"
+#      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "UPS Status"
+      device_class: power
+      state_topic: "/home/office/ups/STATUS"
+      payload_on: "ONLINE"
+      payload_off: "BATT"
+
+#    - platform: mqtt
+#      name: "Main Feed"
+#      device_class: power
+#      state_topic: "/home/office/MainFeed/power"
+#      payload_on: "ON"
+#      payload_off: "OFF"
+
+#    - platform: mqtt
+#      name: "Beaglexm State"
+#      state_topic: "/home/office/beaglexm/state"
+#      device_class: connectivity
+#      payload_on: "UP"
+#      payload_off: "DOWN"
+
+    - platform: mqtt
+      name: "Raspberrypi State"
+      state_topic: "/home/office/raspberrypi/state"
+      device_class: connectivity
+      payload_on: "UP"
+      payload_off: "DOWN"
+
+#    - platform: mqtt
+#      name: "Star Lite State"
+#      state_topic: "/home/office/Star-lite/state"
+#      device_class: connectivity
+#      payload_on: "UP"
+#      payload_off: "DOWN"
+
+group:
+  dining_room:
+    entities:
+        - switch.dining_room_left
+        - switch.dining_room_right
+  office: 
+    entities:
+        - sensor.main_feed
+        - switch.fans
+        - sensor.light_level
+        - sensor.temperature
+        - sensor.pressure
+        - sensor.humidity
+        - sensor.dewpoint
+#        - switch.relay_1
+#        - switch.relay_2
+#        - switch.relay_3
+#        - switch.relay_4
+
+  systems:
+    entities:
+      - switch.punch
+      - binary_sensor.punch_state
+      - binary_sensor.acs1_state
+#      - binary_sensor.acs4_state
+      - binary_sensor.raspberrypi_state
+#      - binary_sensor.Star-Lite_state
+  ups:
+    entities:
+      - sensor.ups_time_left
+      - sensor.ups_mode
+      - sensor.ups_status
+      - sensor.ups_time_left
+      - sensor.ups_battery
+      - sensor.ups_input_voltage
+      - sensor.ups_output_voltage
+      - sensor.ups_load
+
+
+  outside:
+    entities:
+        #      - binary_sensor.porch_light
+        #      - binary_sensor.back_floodlights
+      - switch.porch_light
+      - switch.back_floodlights
+
+mqtt:
+  broker: 127.0.0.1
+
+switch:
+  - platform: mqtt
+    name: 'Test Start'
+    command_topic: "/test/start"
+    state_topic: "/test/start"
+    retain: true
+
+  - platform: mqtt
+    name: "Test Stop"
+    command_topic: "/test/stop"
+    state_topic: "/test/stop"
+    retain: true
+
+#  - platform: snmp
+#    name: 'Main Feed'
+#    host: 192.168.10.51
+#    community: public
+#    baseoid: .1.3.6.1.4.1.318.1.1.4.4.2.1.3.1
+
+  - platform: snmp
+    name: 'Fans'
+    host: 192.168.10.51
+    community: private
+    baseoid: .1.3.6.1.4.1.318.1.1.4.4.2.1.3.8
+    payload_on: 1
+    payload_off: 2
+
+  #  - platform: command_line
+  #  switches:
+  #      fans:
+  #          command_on:  "/opt/homeControl/bin/setPower.py -n FANS -d ON"
+  #          command_off: "/opt/homeControl/bin/setPower.py -n FANS -d OFF"
+  #          value_template: '{{ value == "ON" }}'
+
+  - platform: mqtt
+    name: "Dining Room Left"
+    command_topic: "/home/house/DRLeft/cmnd/power"
+    state_topic: "/home/house/DRLeft/POWER"
+    availability_topic: "/home/house/DRLeft/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+  - platform: mqtt
+    name: "Dining Room Right"
+    command_topic: "/home/house/DRRight/cmnd/power"
+    state_topic: "/home/house/DRRight/POWER"
+    availability_topic: "/home/house/DRRight/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+  - platform: mqtt
+    name: "Christmas Lights"
+    unique_id: christmas_lights
+    state_topic: "/home/house/ChristmasTree/POWER"
+    command_topic: "/home/house/ChristmasTree/cmnd/power"
+    availability_topic: "/home/house/ChristmasTree/LWT"
+
+    payload_on: "ON"
+    payload_off: "OFF"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    qos: 0
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+  - platform: mqtt
+    name: "Porch Light"
+    command_topic: "/home/outside/PorchLight_1/cmnd/power"
+    state_topic: "/home/outside/PorchLight_1/POWER"
+    availability_topic: "/home/outside/PorchLight_1/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+
+  - platform: mqtt
+    name: "Back Floodlights"
+    command_topic: "/home/outside/BackFloodlight/cmnd/power"
+    state_topic: "/home/outside/BackFloodlight/POWER"
+    availability_topic: "/home/outside/BackFloodlight/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+  - platform: mqtt
+    name: "Office Heater"
+    command_topic: "/home/office/heater/cmnd/power"
+    state_topic: "/home/office/heater/POWER"
+    availability_topic: "/home/office/heater/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: true
+
+#  - platform: mqtt
+#    name: "Relay 1"
+#    command_topic: "/home/office/relay1/power"
+#    state_topic: "/home/office/relay1/power"
+#    retain: true
+#
+#  - platform: mqtt
+#    name: "Relay 2"
+#    command_topic: "/home/office/relay2/power"
+#    state_topic: "/home/office/relay2/power"
+#    retain: true
+#
+#  - platform: mqtt
+#    name: "Relay 3"
+#    command_topic: "/home/office/relay3/power"
+#    state_topic: "/home/office/relay3/power"
+#    retain: true
+#
+#  - platform: mqtt
+#    name: "Relay 4"
+#    command_topic: "/home/office/relay4/power"
+#    state_topic: "/home/office/relay4/power"
+#    retain: true
+
+  - platform: mqtt
+    name: "punch"
+    command_topic: "/home/office/punch/power"
+    state_topic: "/home/office/punch/power"
+    retain: true
+
+wemo:
+  discovery: true
+#  static:
+#    - 192.168.0.32
+
+automation:
+  -
+    alias: 'MQTT Test Stop'
+    trigger:
+        platform: state
+        entity_id: switch.test_stop
+    action:
+        service: mqtt.publish
+        data_template:
+            topic: '/home/homeAssistant/switch.test_stop'
+            retain: true
+            payload: >
+                {{trigger.to_state.state}}
+
+  -
+    alias: 'MQTT Test Start'
+    trigger:
+        platform: state
+        entity_id: switch.test_start
+    action:
+        service: mqtt.publish
+        data_template:
+            topic: '/home/homeAssistant/switch.test_start'
+            retain: true
+            payload: >
+                {{trigger.to_state.state}}
+
+  -
+    alias: 'Porch Light on, at dusk'
+    trigger:
+      platform: sun
+      event: sunset
+      offset: '-01:00:00'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.porch_light
+  -
+    alias: 'Porch Light on, at before dawn'
+    trigger:
+      platform: time
+      at: '05:44'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.porch_light
+
+  - alias: 'Office Heater on'
+    trigger:
+      platform: time
+      at: '05:30'
+    condition:
+        condition: time
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.office_heater
+
+  - alias: 'Office Heater off'
+    trigger:
+      platform: time
+      at: '16:30'
+    action:
+      service: homeassistant.turn_off
+      entity_id: switch.office_heater
+
+  -
+    alias: 'Office Light on'
+    trigger:
+      platform: time
+      at: '05:30'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.office_light
+
+  -
+    alias: 'Office Light off'
+    trigger:
+      platform: sun
+      event: sunrise
+      offset: '01:00:00'
+    action:
+      service: homeassistant.turn_off
+      entity_id: switch.office_light
+
+  -
+    alias: 'Back Light on, at dusk'
+    trigger:
+      platform: sun
+      event: sunset
+      offset: '-01:00:00'
+    action:
+      service: homeassistant.turn_on
+      entity_id: switch.back_floodlights
+  -
+    alias: 'Outside Lights Off Night'
+    trigger:
+        platform: time
+        at: '23:00:00'
+    action:
+        service: homeassistant.turn_off
+        entity_id: group.outside
+  -
+    alias: 'Outside Lights Off Day'
+    trigger:
+      platform: sun
+      event: sunrise
+      offset: '00:30:00'
+    action:
+        service: homeassistant.turn_off
+        entity_id: group.outside
+
+shell_command:
+   hass_test: '/srv/homeassistant/Scripts/logValue.sh {{ states.switch.porch_light.state }}'
+

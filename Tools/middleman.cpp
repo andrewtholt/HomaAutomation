@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <poll.h>
+
 #include <string>
 
 #include <iostream>
@@ -18,6 +20,8 @@
 #include <list>
 #include <algorithm>
 #include <nlohmann/json.hpp>
+
+#include "mqttHelper.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -41,12 +45,12 @@ std::string ltrim(const std::string &s, const string WHITESPACE) {
     size_t start = s.find_first_not_of(WHITESPACE);
     return (start == std::string::npos) ? "" : s.substr(start);
 }
- 
+
 std::string rtrim(const std::string &s, const string WHITESPACE) {
     size_t end = s.find_last_not_of(WHITESPACE);
     return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
- 
+
 std::string trim(const std::string &s, const string WHITESPACE) {
     return rtrim(ltrim(s, WHITESPACE),WHITESPACE);
 }
@@ -122,16 +126,37 @@ bool getFromIn(char *buffer, size_t size) {
     size_t cnt = 0;
     char c;
 
+    fd_set rd;
+    struct timeval tv;
+    int ret;
+
     if(buffer == NULL || size == 0)
         return false;
 
-    while(read(STDIN_FILENO, &c, 1) == 1 && cnt < size - 1) {
-        if(c == '\n') {
-            buffer[cnt] = 0;
-            return true;
+    //    while(read(STDIN_FILENO, &c, 1) == 1 && cnt < size - 1) {
+    while(1) {
+        tv.tv_sec  = 0;
+        tv.tv_usec = 500000; // 500 ms
+
+        FD_ZERO(&rd);
+        FD_SET(STDIN_FILENO, &rd);
+
+        ret = select(STDIN_FILENO + 1, &rd, NULL, NULL, &tv);
+
+        if( ret > 0) {
+            read(STDIN_FILENO, &c, 1);
+            if(c == '\n') {
+                buffer[cnt] = 0;
+                return true;
+            } else {
+                buffer[cnt++] = c;
+            }
         }
 
-        buffer[cnt++] = c;
+        if ( ret == 0) {
+            cout << "Timeout" << endl;
+        }
+//        buffer[cnt++] = c;
     }
 
     buffer[cnt] = 0; // making sure it's 0-terminated
@@ -365,7 +390,7 @@ void doGet(string entity_id) {
             } else {
                 string tmp = trim(state,string(" \n\r\t\f\v"));
                 cout << out + tmp ;
-//                cout << chunk.memory << endl;
+                //                cout << chunk.memory << endl;
                 cout << path << endl;
             }
         }
@@ -413,13 +438,11 @@ int main() {
 
     bool OK=false;
 
-
     char *tok[3];
     while( run ) {
         OK = getFromIn(line,sizeof line);
         if(OK) {
             trimWhiteSpace(line);
-            //            fprintf(stderr,"=>%s\n", line);
 
             if(line[0] == '^' ) {
                 if(!strcmp(line,"^EXIT")) {
@@ -437,15 +460,13 @@ int main() {
                     strcpy(buffer,line);
 
                     tok[0] = strtok(buffer," ");
-                    //                    printf("tok[0] is %s\n", tok[0]);
 
                     tok[1] = strtok(NULL," ");
                     if(tok[1] != NULL) {
                         tokCount++;
-                        //                        printf("tok[1] is %s\n", tok[1]);
                         tok[2] = strtok(NULL," ");
                         if(tok[2] != NULL) {
-                            //                            printf("tok[2] is %s\n", tok[2]);
+
                             tokCount++;
                         }
                     }
@@ -453,11 +474,10 @@ int main() {
                     if(fail) {
                         printf("-ERROR\n");
                     }
-                    //                    printf("Tok count %d\n",tokCount);
                 }
 
             } else {
-                printf("ERROR\n");
+                printf("-ERROR\n");
             }
 
         } else {
